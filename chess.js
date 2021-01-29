@@ -120,6 +120,7 @@ $(function() {
         // determine whether move is legal
         if (move(movingPiece, src, dest.id)) {
             dest.appendChild(document.getElementById(data));
+            turn++;
         }
     }
 
@@ -127,7 +128,6 @@ $(function() {
         // only allow white or black to move on their turn
         if (pc[0] == "w" && (turn % 2) != 1) { return false; }
         if (pc[0] == "b" && (turn % 2) != 0) { return false; }
-        turn++;
 
         // can't move to the current square
         if (start == end) { return false; }
@@ -177,7 +177,8 @@ $(function() {
         if (dif1 == 0) { // rook moving vertically
             var sign = Math.sign(start[1] - end[1]); // moving left or right?
             for (i = parseInt(start[1]) - sign; i != end[1]; i -= sign) {
-                if (isSquareOccupied(start[1], i)) {
+                if (isSquareOccupied(start[0], i)) {
+                    debugger;
                     console.log("invlaid move: blocked by another piece");
                     return false; // move blocked
                 }
@@ -188,7 +189,8 @@ $(function() {
         if (dif2 == 0) { // rook moving horizontally
             var sign = Math.sign(start[0] - end[0]); // moving up or down?
             for (i = parseInt(start[0]) - sign; i != end[0]; i -= sign) {
-                if (isSquareOccupied(i, start[0])) {
+                if (isSquareOccupied(i, start[1])) {
+                    debugger;
                     console.log("invlaid move: blocked by another piece");
                     return false; // move blocked
                 }
