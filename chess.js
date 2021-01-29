@@ -15,27 +15,85 @@ $(function() {
     }
 
     // place white pieces
-    $("#81").append('<img class="piece white rook" id="wr1" src="wr.png" alt="white_rook">');
-    $("#82").append('<img class="piece white knight" id="wn1" src="wn.png" alt="white_rook">');
-    $("#83").append('<img class="piece white bishop" id="wb1" src="wb.png" alt="white_rook">');
-    $("#84").append('<img class="piece white queen" id="wq" src="wq.png" alt="white_rook">');
-    $("#85").append('<img class="piece white king" id="wk" src="wk.png" alt="white_rook">');
-    $("#86").append('<img class="piece white bishop" id="wb2" src="wb.png" alt="white_rook">');
-    $("#87").append('<img class="piece white knight" id="wn2" src="wn.png" alt="white_rook">');
-    $("#88").append('<img class="piece white rook" id="wr2" src="wr.png" alt="white_rook">');
 
-    $("#11").append('<img class="piece black rook" id="br1" src="br.png" alt="black_rook">');
-    $("#12").append('<img class="piece black knight" id="bn1" src="bn.png" alt="black_rook">');
-    $("#13").append('<img class="piece black bishop" id="bb1" src="bb.png" alt="black_rook">');
-    $("#14").append('<img class="piece black queen" id="bq" src="bq.png" alt="black_rook">');
-    $("#15").append('<img class="piece black king" id="bk" src="bk.png" alt="black_rook">');
-    $("#16").append('<img class="piece black bishop" id="bb2" src="bb.png" alt="black_rook">');
-    $("#17").append('<img class="piece black knight" id="bn2" src="bn.png" alt="black_rook">');
-    $("#18").append('<img class="piece black rook" id="br2" src="br.png" alt="black_rook">');
+    function placePiece(piece, x, y) {
+        // class string
+        var cl = "piece";
+        // white or black
+        if (piece[0] == "w") {
+            cl += " white";
+        } else {
+            cl += " black";
+        }
+        // piece type
+        switch(piece[1]) {
+            case "r":
+                cl += " rook";
+                break;
+            case "n":
+                cl += " knight";
+                break;
+            case "b":
+                cl += " bishop";
+                break;
+            case "q":
+                cl += " queen";
+                break;
+            case "k":
+                cl += " king";
+                break;
+            case "p":
+                cl += " pawn";
+                break;
+        }
+        // add piece to board
+        $("#" + x + y).append('<img class="' + cl + '" id="' + piece +
+                              '" src="' + piece[0] + piece[1] + '.png">');
+    }
 
+    // place white major pieces
+    placePiece("wr1", 8, 1);
+    placePiece("wn1", 8, 2);
+    placePiece("wb1", 8, 3);
+    placePiece("wq", 8, 4);
+    placePiece("wk", 8, 5);
+    placePiece("wb2", 8, 6);
+    placePiece("wn2", 8, 7);
+    placePiece("wr2", 8, 8);
+
+    // place white pawns
+    placePiece("wp1", 7, 1);
+    placePiece("wp2", 7, 2);
+    placePiece("wp3", 7, 3);
+    placePiece("wp4", 7, 4);
+    placePiece("wp5", 7, 5);
+    placePiece("wp6", 7, 6);
+    placePiece("wp7", 7, 7);
+    placePiece("wp8", 7, 8);
+
+    // place black major pieces
+    placePiece("br1", 1, 1);
+    placePiece("bn1", 1, 2);
+    placePiece("bb1", 1, 3);
+    placePiece("bq", 1, 4);
+    placePiece("bk", 1, 5);
+    placePiece("bb2", 1, 6);
+    placePiece("bn2", 1, 7);
+    placePiece("br2", 1, 8);
+
+    // place black pawns
+    placePiece("bp1", 2, 1);
+    placePiece("bp2", 2, 2);
+    placePiece("bp3", 2, 3);
+    placePiece("bp4", 2, 4);
+    placePiece("bp5", 2, 5);
+    placePiece("bp6", 2, 6);
+    placePiece("bp7", 2, 7);
+    placePiece("bp8", 2, 8);
 
     var src;
     var movingPiece;
+    var turn = 1;
 
     function allowDrop(e) {
         e.preventDefault();
@@ -66,6 +124,11 @@ $(function() {
     }
 
     function move(pc, start, end) {
+        // only allow white or black to move on their turn
+        if (pc[0] == "w" && (turn % 2) != 1) { return false; }
+        if (pc[0] == "b" && (turn % 2) != 0) { return false; }
+        turn++;
+
         // can't move to the current square
         if (start == end) { return false; }
 
@@ -76,7 +139,6 @@ $(function() {
                 return rMove(pc[0], start, end);
                 break;
             case "n": // knights
-                console.log("knight");
                 if (dif1 == 0 ||
                     dif2 == 0 ||
                     (Math.abs(dif1) + Math.abs(dif2) != 3)) {
@@ -90,18 +152,13 @@ $(function() {
                 return bMove(pc[0], start, end);
                 break;
             case "k": // kings
-                console.log("Kings: ");
-                if (Math.abs(dif1) < 2 && Math.abs(dif2) < 2) { return true; }
+                return kMove(pc[0], start, end);
                 break;
             case "q": // queens
                 return (rMove(pc[0], start, end) || bMove(pc[0], start, end));
                 break;
             case "p": // pawns- black pawns and white pawns move differently
-                if (pc[0] == "w") {
-                    return true; 
-                } else {
-                    return true;
-                }
+                return pMove(pc[0], start, end);
                 break;
             default:
                 return false;
@@ -177,11 +234,6 @@ $(function() {
         return true;
     }
 
-    function qMove(color, start, end) {
-        // a queen move is either a rook move or a bishop move
-        return (rMove(color, start,end) || bMove(color, start, end));
-    }
-
     function nMove(color, start, end) {
         var dif1 = start[0] - end[0];
         var dif2 = start[1] - end[1];
@@ -209,11 +261,42 @@ $(function() {
         return true;
     }
 
+    function pMove(color, start, end) {
+        var dif1 = start[0] - end[0],
+            dif2 = start[1] - end[1];
+        
+        // black pawns move down, white pawns move up
+        var sign = 1; // dif1 should be positive for white
+        if (color == "b") {
+            sign = -1; // dif1 should be negative for black
+        }
+
+        // advancing one square
+        if (dif1 == sign && dif2 == 0) {
+            return !isSquareOccupied(end[0], end[1]);
+        }
+        
+        // advancing two squares
+        if (dif1 == 2 * sign && dif2 == 0) {
+            // check if on starting square
+            if (color == "w" && start[0] != 7) { return false; }
+            if (color == "b" && start[0] != 2) { return false; }
+            // check if move is blocked by another piece
+            return !(isSquareOccupied(parseInt(start[0]) - sign, end[1]) ||
+                     isSquareOccupied(end[0], end[1]));
+        }
+
+        // taking
+        if (dif1 == sign && Math.abs(dif2) == 1 &&
+                            isSquareOccupied(end[0], end[1])) {
+            return take(color, end[0], end[1]);
+        }
+        return false; // invalid move
+    }
     // check if a square contains a piece
     function isSquareOccupied(i, j) {
         var sq = document.getElementById(String(i) + String(j));
         if (sq.querySelector(".piece") != null) {
-            debugger;
             return true; // square occupied
         }
         return false; // square empty
@@ -246,7 +329,4 @@ $(function() {
     }
 });
 
-//TODO: check destination square for a enemy piece, implement alternating
-//turns for the colours, implement taking, implement
-//pawn moves, pawn special moves and pawn take, implement castling, implement check and
-//invalid move relating to check, implement checkmate,
+//TODO: en-passant, pawn promotion, castling, invlaid moves due to check, forced king move due to check, checkmate
